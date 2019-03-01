@@ -20,7 +20,7 @@ def List_all():
     List_NO.extend(List_3)    
     List_4=[1580,1593,2376,2455,2889,3563,4305,4736,5007,5487,5706,6146,8210,8446,9905,9937]    #待確認穩定型
     List_5=[2104,2476,3088,3213,3416,3479,3705,5493,6154,6290,6464,8042,8255,8916]    #待確認選股區
-    List_6=[1234,1702,2377,2383,2397,2441,2727,3299,3617,3665,5287,5388,8016,8050]              #待確認成長型
+    List_6=[1234,1702,2377,2383,2397,2441,2727,3617,3665,5287,5388,8016,8050]              #待確認成長型 ,3299
     List_7=[1535,1537,1560,1707,1723,2015,2104,2114,2347,3022,3023,3388,4104,4175,4722,6184,8109,8114,9904,9910,9951]  #雜誌 #8359    
     List_NO.extend(List_4)
     List_NO.extend(List_5)
@@ -42,11 +42,17 @@ def Decide_season():
     month=Now()[1]
     day=Now()[2]
     days=(month-1)*30+day
+    yr=0
     if days>315: season="Q3"
     elif days>225 and days<=315: season="Q2"
     elif days>105 and days<=225: season="Q1"
-    else: season="Q4"    
-    return season
+    elif days<80: 
+        season="Q3"
+        yr=-1
+    else:
+        season="Q4"
+        yr=-1
+    return season,yr
 
 
 def Make_dir(string):
@@ -189,6 +195,8 @@ if __name__=="__main__":
 
 #    List_NO=Read_list_300("300")
 #    Get_stock_name()
+    seasont=Decide_season()
+    print(seasont)
     print("stockstock")
         
         

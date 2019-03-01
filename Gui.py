@@ -79,7 +79,8 @@ class WIN1_FM2:
             condi0=False
             prior=["a","b","c","e","f"]
             exe=1
-           
+
+                       
         label1=tk.Label(self.rt2,text="請選擇一個股票清單:",font=("新細明體",20),bg="#1E90FF")
         label1.place(relx=0.3,rely=0.15,anchor="e")
         button1=tk.Button(self.rt2,text="作者自選定存股清單",font=("新細明體",18),width=30,height=2,relief="groove",command=decide_1)
@@ -457,6 +458,16 @@ class WIN1_FM2:
             global condi6
             condi6="__"
             self.back_to_2()
+        def show_detail():
+            global GPRINT
+            if GPRINT==0:
+                GPRINT=1
+                label7=tk.Label(self.rt2,text="(是)",font=("新細明體",18),bg="#1E90FF")
+                label7.place(relx=0.95,rely=0.8,anchor="center")
+            elif GPRINT==1:
+                GPRINT=0
+                label7=tk.Label(self.rt2,text="(否)",font=("新細明體",18),bg="#1E90FF")
+                label7.place(relx=0.95,rely=0.8,anchor="center")
             
         b1_var_2,b2_var_2,b3_var_2=tk.StringVar(),tk.StringVar(),tk.StringVar()
         b4_var_2,b5_var_2,b6_var_2=tk.StringVar(),tk.StringVar(),tk.StringVar()        
@@ -480,6 +491,9 @@ class WIN1_FM2:
         b4_var_2.set("(d) 近"+condi4_1+"年股價的變異係數小於"+condi4_2 ) 
         b5_var_2.set("(e) 過去"+condi5_1+"年ROE 平均大於"+condi5_2+"% ")
         b6_var_2.set("(f) 過去"+condi6+"年自由現金流 平均大於0 ") 
+        
+        button7=tk.Button(self.rt2,text="是否顯示計算過程",font=("新細明體",18),width=15,height=1,pady=4,relief="groove",command=show_detail)
+        button7.place(relx=0.85,rely=0.8,anchor="center")
         
         pri0=[]
         if condi1 !="__":   #因為command的因素 可能無法用迴圈表達
@@ -548,6 +562,13 @@ class WIN1_FM2:
             if len(pri0) > 1 :
                 button0a=tk.Button(self.rt2,text="自訂篩選順序",font=("新細明體",18),width=15,height=1,pady=4,relief="groove",command=decide_priority)
                 button0a.place(relx=0.85,rely=0.9,anchor="center")
+
+        if GPRINT==1:
+            label7=tk.Label(self.rt2,text="(是)",font=("新細明體",18),bg="#1E90FF")
+            label7.place(relx=0.95,rely=0.8,anchor="center")
+        elif GPRINT==0:
+            label7=tk.Label(self.rt2,text="(否)",font=("新細明體",18),bg="#1E90FF")
+            label7.place(relx=0.95,rely=0.8,anchor="center")
             
         button9=tk.Button(self.rt2,text="回前一頁",font=("新細明體",18),width=15,height=1,pady=6,relief="groove",command=self.back_to_1)
         button9.place(relx=0.15,rely=0.9,anchor="center")
@@ -1025,13 +1046,14 @@ class WIN1_FM3:
 #----------------------------------------------------------------------------
 
 def Declare_global():
-    global condi0,condi1,condi2_1,condi2_2,condi3,condi4_1,condi4_2,condi5_1,condi5_2,condi6,win,listno,prior,exe
+    global condi0,condi1,condi2_1,condi2_2,condi3,condi4_1,condi4_2,condi5_1,condi5_2,condi6,win,listno,prior,exe,GPRINT
     condi1=condi2_1=condi2_2=condi4_1=condi4_2=condi5_1=condi5_2=condi6="__"
     condi0=True
     condi3=["__"]
     listno=["2412"]
     prior=[]
     exe=0
+    GPRINT=0
     win=tk.Tk()
     win.title("Main")
     win.geometry("1280x720")
@@ -1104,8 +1126,9 @@ def Main_gui():
     Condition=Condi_refresh()
     priority=prior    
     Write_result1(List_NO,Condition,priority,exe)
+    print("GPRINT=",GPRINT)
     
-    return List_NO,Condition,priority,exe
+    return List_NO,Condition,priority,exe,GPRINT
 
 #------------------------------------------------------------------------------
 
@@ -1126,7 +1149,7 @@ def End_gui(cond0,list_output):
 
 if __name__=="__main__":
 
-    List_NO,Condition,priority,exe=Main_gui()
+    List_NO,Condition,priority,exe,GPRINT=Main_gui()
     cond0=True
     list_output=[1233,1507,1604,2382,2834,2880,2881,2882,2884,2885,2886,2890,2891,2892,2912,5312,5434,5880,6136,6184,6202,8083,8406,9924,1233,1507,1604,2382,2834,2880,2881,2882,2884,2885,2886,2890,2891,2892,2912,5312,5434,5880,6136,6184,6202,8083,8406,9924]
 #    exe=End_gui(cond0,list_output)

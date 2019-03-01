@@ -37,17 +37,20 @@ def Stockname():
     fp0.close()  
 
 
-def Decide_date_price(input_no,newest):
-    
-    print("\n*********************************")   
+def Decide_date_price(input_no,newest,GPRINT):
+
+    if GPRINT==1:
+        print("\n*********************************")   
     fp=open("Result.txt","a",encoding="utf8")
     
     str_no=str(input_no)
     if str_no in Stock_name:
-        print("\n股票: ["+str_no+"] ["+Stock_name[str_no]+"]")   
+        if GPRINT==1:
+            print("\n股票: ["+str_no+"] ["+Stock_name[str_no]+"]")   
         fp.write("\n股票: ["+str_no+"] ["+Stock_name[str_no]+"]\n")
     else:
-        print("\n股票: ["+str_no+"]")   
+        if GPRINT==1:
+            print("\n股票: ["+str_no+"]")   
         fp.write("\n股票: ["+str_no+"]\n")       
     fp.close()
 
@@ -232,7 +235,7 @@ def Save_new_days(input_no,new_days):
     fp.close()        
 
 
-def Compare_MA_price(input_no,old_days,new_days,cond3):
+def Compare_MA_price(input_no,old_days,new_days,cond3,GPRINT):
 
     large_list=[]
     large_list.extend(old_days)
@@ -284,17 +287,20 @@ def Compare_MA_price(input_no,old_days,new_days,cond3):
         summation += sum_list[i]
         miss += count_list[i]        
         ma=summation/float(day_list[i]-miss)      
-        print("\n"+str(cond3[i])+"年均線計算:")
-        print("無資料天數=",miss,", 實際計算天數=",(day_list[i]-miss) )#,"總和=",summation)
-        print("移動平均線=",ma)
+        if GPRINT==1:
+            print("\n"+str(cond3[i])+"年均線計算:")
+            print("無資料天數=",miss,", 實際計算天數=",(day_list[i]-miss) )#,"總和=",summation)
+            print("移動平均線=",ma)
     
         fp.write(str(cond3[i])+"年移動平均線= "+str(ma)+"\n")
         if newest < ma:
-            print("最新收盤價= "+str(newest)+" < "+str(cond3[i])+"年均線")
+            if GPRINT==1:
+                print("最新收盤價= "+str(newest)+" < "+str(cond3[i])+"年均線")
             fp.write("最新收盤價 ="+str(newest)+" < "+str(cond3[i])+"年均線\n")
             match+=1
         else:
-            print("最新收盤價= "+str(newest)+" >= "+str(cond3[i])+"年均線")
+            if GPRINT==1:
+                print("最新收盤價= "+str(newest)+" >= "+str(cond3[i])+"年均線")
             fp.write("最新收盤價= "+str(newest)+" >= "+str(cond3[i])+"年均線\n")
 
     fp.write("\n*************************************\n")
@@ -304,7 +310,7 @@ def Compare_MA_price(input_no,old_days,new_days,cond3):
     return select
 
 
-def Calculate_price(input_no,old_days,new_days,cond4):
+def Calculate_price(input_no,old_days,new_days,cond4,GPRINT):
     
     large_list=[]
     large_list.extend(old_days)
@@ -343,22 +349,25 @@ def Calculate_price(input_no,old_days,new_days,cond4):
         var = ( sum2_all/float(dd-1-miss) ) - (avg*avg)
         dev = pow(var,0.5)
         coef = dev/avg
-        print("計算總天數=",str(dd-1-miss))        
+        if GPRINT==1:
+            print("計算總天數=",str(dd-1-miss))  
+            print("過去"+str(yy)+"年平均股價="+str(avg) )
+            print("標準差=",dev)
+            print("變異係數=",coef)        
         fp.write("計算總天數= "+str(dd-1-miss))
-        print("過去"+str(yy)+"年平均股價="+str(avg) )
         fp.write("\n過去"+str(yy)+"年平均股價="+str(avg))
 #        print("sum2_all=",sum2_all)
 #        print("sum2_all/float(dd-1-miss)=",sum2_all/float(dd-1-miss) )
 #        print("變異數=",var)
-        print("標準差=",dev)
-        print("變異係數=",coef)
         fp.write("\n標準差="+str(dev)+"    變異係數= "+str(coef))        
         if coef < cond4[1]:
-            print("變異係數小於"+str(cond4[1]) )
+            if GPRINT==1:
+                print("變異係數小於"+str(cond4[1]) )
             fp.write("\n變異係數小於"+str(cond4[1])+"\n")
             select=1            
         else:
-            print("變異係數大於"+str(cond4[1]) )
+            if GPRINT==1:
+                print("變異係數大於"+str(cond4[1]) )
             fp.write("\n變異係數大於"+str(cond4[1])+"\n")  
 
     fp.write("\n*************************************\n")
@@ -367,7 +376,7 @@ def Calculate_price(input_no,old_days,new_days,cond4):
      
 #------------------------------------------------------------------------------    
        
-def Main_price(LIST_NO,COND3,COND4,I):
+def Main_price(LIST_NO,COND3,COND4,I,GPRINT):
     
     print("\n\n*******************[Main_price Program]*******************\n")
     with open("Result.txt","a",encoding="utf8") as fp:
@@ -379,7 +388,7 @@ def Main_price(LIST_NO,COND3,COND4,I):
     for INPUT_NO in LIST_NO:
         OPTION=168
         OLD_DAYS,NEW_DAYS=[],[]
-        INPUT_YEAR,INPUT_MONTH,OLD_DAYS,END,CHOICE = Decide_date_price(INPUT_NO,NEWEST)
+        INPUT_YEAR,INPUT_MONTH,OLD_DAYS,END,CHOICE = Decide_date_price(INPUT_NO,NEWEST,GPRINT)
         if CHOICE!=2:                                     # 檔案尚未存在(CHOICE)=0, 檔案存在但非最新=1 ,最新=2
             OPTION=Decide_exist_price(INPUT_NO)    
             if OPTION!=3:                                 # 上市(OPTION)=1,上櫃=2, 皆無資料=3
@@ -406,10 +415,10 @@ def Main_price(LIST_NO,COND3,COND4,I):
         if OPTION!=3:
                 
             if I=="c":                             
-                SELECT=Compare_MA_price(INPUT_NO,OLD_DAYS,NEW_DAYS,COND3)
+                SELECT=Compare_MA_price(INPUT_NO,OLD_DAYS,NEW_DAYS,COND3,GPRINT)
                 if (SELECT==1): LIST_SELECT.append(INPUT_NO)
             if I=="d":
-                SELECT=Calculate_price(INPUT_NO,OLD_DAYS,NEW_DAYS,COND4)
+                SELECT=Calculate_price(INPUT_NO,OLD_DAYS,NEW_DAYS,COND4,GPRINT)
                 if (SELECT==1): LIST_SELECT.append(INPUT_NO)
                 
     print("\n階段選股清單:")
@@ -426,12 +435,12 @@ if __name__=="__main__":
     COND3=[5,3]
     COND4=[5,0.3]
     I="d"
-
-#    LIST_NO=Stock.List_all()
+    GPRINT=0
+    LIST_NO=Stock.List_all()
 #    LIST_NO=Stock.Read_list_300("300") 
 #    LIST_NO=[6677,1101,1102,1104]
-#    LIST_SELECT=Main_price(LIST_NO,COND3,COND4,I)
-    Decide_newest_day()
+    LIST_SELECT=Main_price(LIST_NO,COND3,COND4,I,GPRINT)
+#    Decide_newest_day()
 
 
     

@@ -12,18 +12,20 @@ def Stockname():
     fp0.close() 
     
 
-def Check_json_roe(input_no):
-    
-    if Stock.Now()[1] >= 5:
-        end_y=Stock.Now()[0]-1                        #視情況 此處設定每年5月作切換
+def Decide_str_sea2():
+    global str_sea,end_y
+    if Stock.Now()[1] >= 4:
+        end_y=Stock.Now()[0]-1     #視情況 此處設定每年4月作切換
     else: 
-        end_y=Stock.Now()[0]-2                         #end_y=所需資料的最新一年              
-    season=Stock.Decide_season()
-    if season=="Q4":
+        end_y=Stock.Now()[0]-2                           #end_y=所需資料的最新一年
+    season,yr=Stock.Decide_season()
+    if yr==-1:
         str_sea=str(Stock.Now()[0]-1)[2:4]+season
     else:
-        str_sea=str(Stock.Now()[0])[2:4]+season        #str_sea=所需資料的最新一季 
-        
+        str_sea=str(Stock.Now()[0])[2:4]+season          #str_sea=所需資料的最新一季
+
+
+def Check_json_roe(input_no):        
     option=1
     dict_no={}  
     str_no=str(input_no)
@@ -44,7 +46,7 @@ def Check_json_roe(input_no):
         else: print("\n"+str_no+"的ROE資料尚未在json檔案裡")              #option=1 執行網路爬蟲
     else: print("\n"+file_path+"檔案不存在")                        #option=1 執行網路爬蟲    
 #    print(dict_no)
-    return option,dict_no,end_y  
+    return option,dict_no  
 
 
 def Generate_URL_roe(input_no):
@@ -123,19 +125,23 @@ def Scrap_data_roe(input_no,soup):
     return dict_small    
 
 
-def Determine_roe(input_no,dict_no,end_y,cond5):        
+def Determine_roe(input_no,dict_no,cond5,GPRINT):        
     
     select=0
     if dict_no!={}:   
         fp = open("Result.txt","a",encoding="utf8") 
         str_no=str(input_no)        
         if str_no in Stock_name:
-            print("\n股票:     ["+str_no+"] ["+Stock_name[str_no]+"]")
+            if GPRINT==1:
+                print("\n股票:     ["+str_no+"] ["+Stock_name[str_no]+"]")
             fp.write("\n股票:    ["+str_no+"] ["+Stock_name[str_no]+"]\n")
         else:
-            print("\n股票號碼= "+str_no)
+            if GPRINT==1:
+                print("\n股票號碼= "+str_no)
             fp.write("\n股票號碼= "+str_no)
-        print("年份      ROE(%)")
+        
+        if GPRINT==1:
+            print("年份      ROE(%)")
         fp.write("年份     ROE(%)")
         miss=0
         sum_all=0
@@ -143,7 +149,8 @@ def Determine_roe(input_no,dict_no,end_y,cond5):
             str1=str(end_y-i)                    
             if str1 in dict_no:
                 str2=dict_no[str1]
-                print(str1,"    ",str2)
+                if GPRINT==1:
+                    print(str1,"    ",str2)
                 fp.write("\n"+str1+"     "+str2)
                 if str2 != ("-" and "--"):
                     sum_all += float(str2)
@@ -157,35 +164,39 @@ def Determine_roe(input_no,dict_no,end_y,cond5):
         else:
             avg=sum_all/float(count)        
             if avg > float(cond5[1]):
-                print("過去"+str(count)+"年的ROE平均為"+str(avg)[0:5]+"% > "+str(cond5[1])+"%")
+                if GPRINT==1:
+                    print("過去"+str(count)+"年的ROE平均為"+str(avg)[0:5]+"% > "+str(cond5[1])+"%")
                 fp.write("\n過去"+str(count)+"年的ROE平均為"+str(avg)[0:5]+"% > "+str(cond5[1])+"%\n")
                 select=1
             else:
-                print("過去"+str(count)+"年的ROE平均為"+str(avg)[0:5]+"% <= "+str(cond5[1])+"%")
+                if GPRINT==1:
+                    print("過去"+str(count)+"年的ROE平均為"+str(avg)[0:5]+"% <= "+str(cond5[1])+"%")
                 fp.write("\n過去"+str(count)+"年的ROE平均為"+str(avg)[0:5]+"% <= "+str(cond5[1])+"%\n")                         
 
-        print("\n*******************************************")
+        if GPRINT==1:
+            print("\n*******************************************")
         fp.write("\n********************************************\n")
         fp.close()        
     return select
         
 #--------------------------------------------------------------------------------
 
-def Main_roe(LIST_NO,COND5):
+def Main_roe(LIST_NO,COND5,GPRINT):
     
     print("\n\n*******************[Main_ROE Program]*******************\n")
     with open("Result.txt","a",encoding="utf8") as fp:
         fp.write("\n\n*******************[Main_ROE Program]*******************\n\n") 
         
     LIST_SELECT=[]
-    Stockname()        
+    Stockname()
+    Decide_str_sea2()        
     for INPUT_NO in LIST_NO:
-        OPTION,DICT_NO,END_Y=Check_json_roe(INPUT_NO)
+        OPTION,DICT_NO=Check_json_roe(INPUT_NO)
         if OPTION==1:
             URL=Generate_URL_roe(INPUT_NO)
             SOUP=Stock.Get_soup(URL,310,3.5)
             DICT_NO=Scrap_data_roe(INPUT_NO,SOUP) 
-        SELECT=Determine_roe(INPUT_NO,DICT_NO,END_Y,COND5)                   
+        SELECT=Determine_roe(INPUT_NO,DICT_NO,COND5,GPRINT)                   
         if (SELECT==1): LIST_SELECT.append(INPUT_NO)
         
     print("\n階段選股清單:")
@@ -202,10 +213,11 @@ if __name__=="__main__":
     no_list=[1563,8341,6024]
 #    Delete_data_roe(no_list)
     
-#    LIST_NO=Stock.List_all()    
-    LIST_NO=[3711] 
+    LIST_NO=Stock.List_all()    
+#   LIST_NO=[3711] 
     COND5=[10,8]
-    LIST_SELECT=Main_roe(LIST_NO,COND5)
+    GPRINT=0
+    LIST_SELECT=Main_roe(LIST_NO,COND5,GPRINT)
 
 
 

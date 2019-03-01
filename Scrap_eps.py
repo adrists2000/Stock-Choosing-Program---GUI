@@ -12,15 +12,18 @@ def Stockname():
     fp0.close()
 
 
-def Check_json_eps(input_no):
-    
-    option=1
-    dict_no={}
-    season=Stock.Decide_season()
-    if season=="Q4":
+def Decide_str_sea():
+    global str_sea
+    season,yr=Stock.Decide_season()
+    if yr==-1:
         str_sea=str(Stock.Now()[0]-1)+season
     else:
-        str_sea=str(Stock.Now()[0])+season    
+        str_sea=str(Stock.Now()[0])+season 
+
+
+def Check_json_eps(input_no):    
+    option=1
+    dict_no={}  
     str_no=str(input_no)    
     str1=str(input_no)[0:2]+"xx"
     file_path="json/eps/"+ str1 + "_eps.json"        
@@ -115,7 +118,7 @@ def Scrap_data_eps(input_no,soup):
     return dict_small
 
 
-def Compare_eps(input_no,dict_no,cond1):        
+def Compare_eps(input_no,dict_no,cond1,GPRINT):        
     
     select=0
     if dict_no!={}:
@@ -147,10 +150,12 @@ def Compare_eps(input_no,dict_no,cond1):
         fp = open("Result.txt","a",encoding="utf8") 
         str_no=str(input_no)        
         if str_no in Stock_name:
-            print("\n股票: ["+str_no+"] ["+Stock_name[str_no]+"]")
+            if GPRINT==1:
+                print("\n股票: ["+str_no+"] ["+Stock_name[str_no]+"]")
             fp.write("\n股票: ["+str_no+"] ["+Stock_name[str_no]+"]\n")
         else:
-            print("\n股票號碼= "+str_no)
+            if GPRINT==1:
+                print("\n股票號碼= "+str_no)
             fp.write("\n股票號碼= "+str_no)                
        
         sum_list=[]
@@ -164,7 +169,8 @@ def Compare_eps(input_no,dict_no,cond1):
                     if dic[str0] != ("-" and "--") :
                         sum0=float(dic[str0])
                         sum1+=sum0
-                print(str(yy)+"年前"+str(num_q)+"季累計EPS=",sum1)
+                if GPRINT==1:
+                    print(str(yy)+"年前"+str(num_q)+"季累計EPS=",sum1)
                 fp.write(str(yy)+"年前"+str(num_q)+"季累計EPS="+str(sum1)+"\n")
 
             sum_list.append(sum1)            
@@ -174,50 +180,55 @@ def Compare_eps(input_no,dict_no,cond1):
         count=cond1-miss
         if count==0:
             avg=0
-            print("無法計算過去同期累計的EPS")
+            if GPRINT==1:
+                print("無法計算過去同期累計的EPS")
             fp.write("無法計算過去同期累計的EPS\n")
         else:
             avg=(sum2-sum_list[0]) / float(count)
-#            print("miss=",miss,"count=",count)       
-            print("過去"+str(count)+"年平均同期累計的EPS=",avg)
+#            print("miss=",miss,"count=",count)  
+            if GPRINT==1:
+                print("過去"+str(count)+"年平均同期累計的EPS=",avg)
             fp.write("過去"+str(count)+"年平均同期累計的EPS= "+str(avg)+"\n")
             if sum_list[0]>=avg :
-                print("今年目前累計的EPS >= 過去"+str(count)+"年平均同期累計的EPS")
+                if GPRINT==1:
+                    print("今年目前累計的EPS >= 過去"+str(count)+"年平均同期累計的EPS")
                 fp.write("今年目前累計的EPS >= 過去"+str(count)+"年平均同期累計的EPS\n")
                 select=1
             else:
-                print("今年目前累計的EPS < 過去"+str(count)+"年平均同期累計的EPS")
+                if GPRINT==1:
+                    print("今年目前累計的EPS < 過去"+str(count)+"年平均同期累計的EPS")
                 fp.write("今年目前累計的EPS < 過去"+str(count)+"年平均同期累計的EPS\n")            
 
         fp.write("\n******************************************\n")   
         fp.close()
-    print("\n**********************************************") 
+    if GPRINT==1:
+        print("\n**********************************************") 
     return select
     
 #-------------------------------------------------------
 
-def Main_eps(LIST_NO,COND1):
+def Main_eps(LIST_NO,COND1,GPRINT):
     
     print("\n\n***************[Main_EPS Program]***************\n")
     with open("Result.txt","a",encoding="utf8") as fp:
-        fp.write("\n\n***************[Main_EPS Program]***************\n\n")   
-    
+        fp.write("\n\n***************[Main_EPS Program]***************\n\n")      
     LIST_SELECT=[]
-    Stockname()        
+    Stockname()
+    Decide_str_sea()        
     for INPUT_NO in LIST_NO:
         OPTION,DICT_NO=Check_json_eps(INPUT_NO)
         if OPTION==1:
             URL=Generate_URL_eps(INPUT_NO)
             SOUP=Stock.Get_soup(URL,310,4)
             DICT_NO=Scrap_data_eps(INPUT_NO,SOUP) 
-        SELECT=Compare_eps(INPUT_NO,DICT_NO,COND1)                   
+        SELECT=Compare_eps(INPUT_NO,DICT_NO,COND1,GPRINT)                   
         if (SELECT==1): LIST_SELECT.append(INPUT_NO)
         
     print("\n階段選股清單:")
     print(LIST_SELECT)
     with open("Result.txt","a",encoding="utf8") as fp:
         fp.write("\n階段選股清單:\n"+str(LIST_SELECT)+"\n")
-        
+#    print("\nglobalprint=",globalprint)        
     return LIST_SELECT
         
 #----------------------------------------------------------
@@ -228,10 +239,11 @@ if __name__=="__main__":
 #    Delete_data_eps(no_list)
     
     LIST_NO=Stock.List_all() 
-#    LIST_NO=Stock.Read_list_300("300") 
-    LIST_NO=[8359] 
+    LIST_NO=Stock.Read_list_300("300") 
+#    LIST_NO=[1216] 
     COND1=10
-    LIST_SELECT=Main_eps(LIST_NO,COND1)
+    GPRINT=0
+    LIST_SELECT=Main_eps(LIST_NO,COND1,GPRINT)
 
    
 

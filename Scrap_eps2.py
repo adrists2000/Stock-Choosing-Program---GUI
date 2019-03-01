@@ -11,23 +11,23 @@ def Stockname():
     Stock_name=json.load(fp0)
     fp0.close()   
 
+def Decide_str_sea2():
+    global str_sea,end_y
+    if Stock.Now()[1] >= 4:
+        end_y=Stock.Now()[0]-1     #視情況 此處設定每年4月作切換
+    else: 
+        end_y=Stock.Now()[0]-2                           #end_y=所需資料的最新一年
+    season,yr=Stock.Decide_season()
+    if yr==-1:
+        str_sea=str(Stock.Now()[0]-1)[2:4]+season
+    else:
+        str_sea=str(Stock.Now()[0])[2:4]+season          #str_sea=所需資料的最新一季
 
 def Check_json_eps2(input_no):
-  
     option=1
     dict_no={}
     str_no=str(input_no)    
-    str1=str(input_no)[0]+"xxx"
-    if Stock.Now()[1] >= 5:
-        end_y=Stock.Now()[0]-1     #視情況 此處設定每年5月作切換
-    else: 
-        end_y=Stock.Now()[0]-2                           #end_y=所需資料的最新一年
-    season=Stock.Decide_season()
-    if season=="Q4":
-        str_sea=str(Stock.Now()[0]-1)[2:4]+season
-    else:
-        str_sea=str(Stock.Now()[0])[2:4]+season          #str_sea=所需資料的最新一季       
-    
+    str1=str(input_no)[0]+"xxx"           
     file_path="json/eps2/"+ str1 + "_eps2.json"    #      
     if os.path.exists(file_path):
         fp1 = open(file_path,'r') 
@@ -45,7 +45,7 @@ def Check_json_eps2(input_no):
         else: print("\n"+str_no+"的EPS資料尚未在json檔案裡")              #option=1 執行網路爬蟲
     else: print("\n"+file_path+"檔案不存在")                        #option=1 執行網路爬蟲    
 #    print(dict_no)
-    return option,dict_no,end_y  
+    return option,dict_no  
 
 
 def Generate_URL_eps2(input_no):
@@ -124,20 +124,23 @@ def Scrap_data_eps2(input_no,soup):
     return dict_small    
 
 
-def Calculate_eps2(input_no,dict_no,end_y,cond2):        
+def Calculate_eps2(input_no,dict_no,cond2,GPRINT):        
     
     select=0
     if dict_no!={}:
         fp = open("Result.txt","a",encoding="utf8") 
         str_no=str(input_no)        
         if str_no in Stock_name:
-            print("\n股票: ["+str_no+"] ["+Stock_name[str_no]+"]")
+            if GPRINT==1:
+                print("\n股票: ["+str_no+"] ["+Stock_name[str_no]+"]")
             fp.write("\n股票: ["+str_no+"] ["+Stock_name[str_no]+"]\n")
         else:
-            print("\n股票號碼= "+str_no)
+            if GPRINT==1:
+                print("\n股票號碼= "+str_no)
             fp.write("\n股票號碼= "+str_no)
         
-        print("年份      EPS")
+        if GPRINT==1:
+            print("年份      EPS")
         fp.write("年份      EPS")        
         miss=0
         sum_all=0
@@ -146,7 +149,8 @@ def Calculate_eps2(input_no,dict_no,end_y,cond2):
             str1=str(end_y-i)                    
             if str1 in dict_no:
                 str2=dict_no[str1]
-                print(str1,"    ",str2)
+                if GPRINT==1:
+                    print(str1,"    ",str2)
                 fp.write("\n"+str1+"     "+str2)
                 if str2 != ("-" and "--"):
                     sum_all += float(str2)
@@ -155,11 +159,13 @@ def Calculate_eps2(input_no,dict_no,end_y,cond2):
             else: miss+=1
         count=cond2[0]-miss            #可計算的年份
         if count==0:
-            print("無法計算過去幾年EPS的變異係數")
+            if GPRINT==1:
+                print("無法計算過去幾年EPS的變異係數")
             fp.write("\n無法計算過去幾年EPS的變異係數\n")
         else:
             avg=sum_all/float(count)  
-            print("\n過去"+str(count)+"年平均EPS為",avg)
+            if GPRINT==1:
+                print("\n過去"+str(count)+"年平均EPS為",avg)
             fp.write("\n過去"+str(count)+"年平均EPS為"+str(avg))
 #            print("sum2_all=",sum2_all)
 #            print("sum2_all/float(count)",sum2_all/float(count) )
@@ -167,40 +173,44 @@ def Calculate_eps2(input_no,dict_no,end_y,cond2):
             var0=( sum2_all/float(count) ) - (avg*avg)    #變異數公式
             dev0= pow(var0,0.5)                           #開根號變 標準差 
             coef0= dev0/avg                               #變異係數公式
-            print("變異數=",var0," 標準差=",dev0)
-            print("變異係數=",coef0)
+            if GPRINT==1:
+                print("變異數=",var0," 標準差=",dev0)
+                print("變異係數=",coef0)
             fp.write("\n變異數="+str(var0)+"  標準差="+str(dev0))
             fp.write("\n變異係數="+str(coef0))
             if coef0 < cond2[1]:
-                print("變異係數 < "+str(cond2[1]) )
+                if GPRINT==1:
+                    print("變異係數 < "+str(cond2[1]) )
                 fp.write("  < "+str(cond2[1]))
                 select=1
             else:
-                print("變異係數 > "+str(cond2[1]) )
+                if GPRINT==1:
+                    print("變異係數 > "+str(cond2[1]) )
                 fp.write("  > "+str(cond2[1]))
-
-        print("\n********************************************************")
+        if GPRINT==1:
+            print("\n********************************************************")
         fp.write("\n\n********************************************************\n")
         fp.close()        
     return select
         
 #--------------------------------------------------------------------------------
 
-def Main_eps2(LIST_NO,COND2):
+def Main_eps2(LIST_NO,COND2,GPRINT):
     
     print("\n\n*******************[Main_EPS2 Program]*******************\n")
     with open("Result.txt","a",encoding="utf8") as fp:
         fp.write("\n\n*******************[Main_EPS2 Program]*******************\n\n") 
         
     LIST_SELECT=[] 
-    Stockname()       
+    Stockname()  
+    Decide_str_sea2()     
     for INPUT_NO in LIST_NO:
-        OPTION,DICT_NO,END_Y=Check_json_eps2(INPUT_NO)
+        OPTION,DICT_NO=Check_json_eps2(INPUT_NO)
         if OPTION==1:
             URL=Generate_URL_eps2(INPUT_NO)
             SOUP=Stock.Get_soup(URL,310,3.5)
             DICT_NO=Scrap_data_eps2(INPUT_NO,SOUP) 
-        SELECT=Calculate_eps2(INPUT_NO,DICT_NO,END_Y,COND2)                   
+        SELECT=Calculate_eps2(INPUT_NO,DICT_NO,COND2,GPRINT)                   
         if (SELECT==1): LIST_SELECT.append(INPUT_NO)
         
     print("\n階段選股清單:")
@@ -217,11 +227,12 @@ if __name__=="__main__":
 #    no_list=[1563]
 #    Delete_data_roe(no_list)
     
-#    LIST_NO=Stock.List_all()   
+    LIST_NO=Stock.List_all()   
 #    LIST_NO=Stock.Read_list_300("300")     
-    LIST_NO=[3711] 
+#    LIST_NO=[3711] 
     COND2=[9,1]
-    LIST_SELECT=Main_eps2(LIST_NO,COND2)
+    GPRINT=0
+    LIST_SELECT=Main_eps2(LIST_NO,COND2,GPRINT)
 
 
 
