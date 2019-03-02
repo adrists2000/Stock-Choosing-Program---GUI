@@ -125,10 +125,10 @@ def Compare_eps(input_no,dict_no,cond1,GPRINT):
         dic=dict_no 
         yy=Stock.Now()[0]
         mm=Stock.Now()[1]
-        if mm>=5:  use_y=str(yy)       # 以5月作為分界 視情況!!
+        if mm>=4:  use_y=str(yy)       # 以4月作為分界 視情況!!
         else: use_y=str(yy-1)        
         on_off=[]
-        for i in range(0,cond1+1):
+        for i in range(0,cond1+1):    # 判斷該年度 每季資料是否齊全
             yy=int(use_y)-i
             strQ1=str(yy)+"Q1"
             strQ2=str(yy)+"Q2"
@@ -144,8 +144,13 @@ def Compare_eps(input_no,dict_no,cond1,GPRINT):
                         if strQ4 in dic:
                             on_of[4]=1
 #            print(on_of)                    
-            on_off.append(on_of)            
-        num_q=on_off[0].index(0) -1
+            on_off.append(on_of) 
+        for i in range(1,5):            # 最新一年 目前已有幾季的資料
+            num_q=4
+            if on_off[0][i]==0:
+                num_q=(i-1)
+                break
+#        print("num_q=",num_q)
                          
         fp = open("Result.txt","a",encoding="utf8") 
         str_no=str(input_no)        
@@ -163,16 +168,20 @@ def Compare_eps(input_no,dict_no,cond1,GPRINT):
         for i in range(0,cond1+1):
             yy=int(use_y)-i
             sum1=0
-            if on_off[i][num_q]==1:
+            if on_off[i][num_q]!=0:
                 for j in range(1,num_q+1):
                     str0=str(yy)+"Q"+str(j) 
                     if dic[str0] != ("-" and "--") :
                         sum0=float(dic[str0])
                         sum1+=sum0
+                    else:
+                        sum1=0
+                        break
+
+            if sum1 != 0:
                 if GPRINT==1:
                     print(str(yy)+"年前"+str(num_q)+"季累計EPS=",sum1)
                 fp.write(str(yy)+"年前"+str(num_q)+"季累計EPS="+str(sum1)+"\n")
-
             sum_list.append(sum1)            
             sum2+=sum1            
         
@@ -242,7 +251,7 @@ if __name__=="__main__":
     LIST_NO=Stock.Read_list_300("300") 
 #    LIST_NO=[1216] 
     COND1=10
-    GPRINT=0
+    GPRINT=1
     LIST_SELECT=Main_eps(LIST_NO,COND1,GPRINT)
 
    

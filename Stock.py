@@ -46,7 +46,7 @@ def Decide_season():
     if days>315: season="Q3"
     elif days>225 and days<=315: season="Q2"
     elif days>105 and days<=225: season="Q1"
-    elif days<80: 
+    elif days<85: 
         season="Q3"
         yr=-1
     else:

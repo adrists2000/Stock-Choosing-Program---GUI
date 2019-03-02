@@ -231,7 +231,7 @@ if __name__=="__main__":
 #    LIST_NO=Stock.Read_list_300("300")     
 #    LIST_NO=[3711] 
     COND2=[9,1]
-    GPRINT=0
+    GPRINT=1
     LIST_SELECT=Main_eps2(LIST_NO,COND2,GPRINT)
 
 
